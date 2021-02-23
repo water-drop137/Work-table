@@ -1,0 +1,517 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>勤務表</title>
+    <!--CDNへのリンクを設置-->
+    <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
+    <style>
+        table,
+        table th,
+        input {
+            text-align: center;
+            border-collapse: collapse;
+            border: 1px solid green;
+            /* 外枠 */
+        }
+        
+        table tr,
+        table td {
+            text-align: center;
+            border-collapse: collapse;
+            border-style: solid dotted;
+            /* 線種 */
+            border-width: 1px;
+            /* 線の太さ */
+            border-color: green;
+            /* 線色 */
+        }
+        /*input {
+            color: #2196F3;
+        }*/
+    </style>
+
+</head>
+
+
+<body>
+    <!--エクセル形式でダウンロードを実行するボタン-->
+    <button type="button" id="dl-xlsx" style="position: absolute; left: 1280px; top: 25px">Download XLSX</button>
+
+    <div style="display:inline-flex">
+        <form>
+            <!--西暦を入力するテキストボックス-->
+            <label for="yearInput">
+                    <input type="text" id="year1" name="seireki" size="25"  style="width:100px; height:30px;position: relative; left: 680px; top: 10px" >
+                </label>
+            <label style="width:100px; height:30px;position: relative; left: 695px; top: 10px">年（西暦)</label>
+            <!--月を入力するテキストボックス-->
+            <label for="monthInput">
+                    <input type="text" id="month1" name="tsuki" size="25" style="width:100px; height:30px;position: relative; left: 715px; top: 10px">
+                </label>
+            <label style="width:100px; height:30px;position: relative; left: 730px; top: 10px">月</label>
+        </form>
+    </div>
+
+    <!--月に応じた勤務表作成するボタン-->
+    <button type="button" style="width:100px; height:30px; position: relative; left: 739px; top: 9px" onclick="clearTextBoxes();eliminate_tblROW();getHoliday();getD()">実行</button>
+    <!--リセットボタン-->
+    <br><button type="button" style="width:100px; height:30px; position: relative; left: 1060px; top: 16px" onclick="clearTextBoxes()">リセット</button>
+
+    <div align="center">
+        <table class="table-to-export" data-sheet-name="勤務表" 　border="1" , id="worktbl" bgcolor="#EEEEEE">
+
+
+            <!--//1行目　ヘッダー-->
+            <tr bgcolor="#D6FF58">
+                <th>日</th>
+                <th>曜</th>
+                <th>祝日</th>
+                <th>始業時間</th>
+                <th class="none"></th>
+                <th>終業時間</th>
+                <th>勤務時間</th>
+            </tr>
+
+            <!--勤務時間の合計表示-->
+            <label id="total" style="width:100px; height:30px; position: relative; left: 280px; top: -20px ">総勤務時間</label>
+            <font color="red">
+                <label id="total2" style="width:100px; height:30px; position: relative; left: 239px; top: 0px">0</label>
+            </font>
+            <label style="width:100px; height:30px;position: relative; left: 236.5px; top: 0px">(h)</label>
+
+            <!--//2行目-->
+            <tr id="tr1">
+                <td width="25" id="d1">1</td>
+                <td width="20" id="y1"></td>
+                <td width="100">
+                    <label for="name1" id="skz1"></label>
+                </td>
+                <td id="txt1" width="20">
+                    <input type="text" id="st1" name="ST">
+                </td>
+                <td id="c1" class="none" width="5">～</td>
+                <td id="e1" width="20">
+                    <input type="text" id="end1" name="ET" onblur="timeTOTAL();sumTIME()">
+                </td>
+                <td width="70" id="res1"></td>
+            </tr>
+
+            <!--//3行目-->
+            <tr id="tr2">
+                <td id="d2">2</td>
+                <td id="y2"></td>
+                <td id="skz2"><label for="name2"></label></td>
+                <td id="txt2"><input type="text" id="st2" name="ST"></td>
+                <td id="c2" class="none">～</td>
+                <td id="e2"><input type="text" id="end2" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res2"></td>
+            </tr>
+
+            <tr id="tr3">
+                <td id="d3">3</td>
+                <td id="y3"></td>
+                <td id="skz3"><label for="name3"></label></td>
+                <td id="txt3"><input type="text" id="st3" name="ST"></td>
+                <td id="c3">～</td>
+                <td id="e3"><input type="text" id="end3" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res3"></td>
+            </tr>
+
+            <tr id="tr4">
+                <td id="d4">4</td>
+                <td id="y4"></td>
+                <td id="skz4"><label for="name4"></label></td>
+                <td id="txt4"><input type="text" id="st4" name="ST"></td>
+                <td id="c4">～</td>
+                <td id="e4"><input type="text" id="end4" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res4"></td>
+            </tr>
+
+            <tr id="tr5">
+                <td id="d5">5</td>
+                <td id="y5"></td>
+                <td id="skz5"><label for="name5"></label></td>
+                <td id="txt5"><input type="text" id="st5" name="ST"></td>
+                <td id="c5">～</td>
+                <td id="e5"><input type="text" id="end5" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res5"></td>
+            </tr>
+
+            <tr id="tr6">
+                <td id="d6">6</td>
+                <td id="y6"></td>
+                <td id="skz6"><label for="name6"></label></td>
+                <td id="txt6"><input type="text" id="st6" name="ST"></td>
+                <td id="c6">～</td>
+                <td id="e6"><input type="text" id="end6" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res6"></td>
+            </tr>
+
+            <tr id="tr7">
+                <td id="d7">7</td>
+                <td id="y7"></td>
+                <td id="skz7"><label for="name7"></label></td>
+                <td id="txt7"><input type="text" id="st7" name="ST"></td>
+                <td id="c7">～</td>
+                <td id="e7"><input type="text" id="end7" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res7"></td>
+            </tr>
+
+            <tr id="tr8">
+                <td id="d8">8</td>
+                <td id="y8"></td>
+                <td id="skz8"><label for="name8"></label></td>
+                <td id="txt8"><input type="text" id="st8" name="ST"></td>
+                <td id="c8">～</td>
+                <td id="e8"><input type="text" id="end8" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res8"></td>
+            </tr>
+
+            <tr id="tr9">
+                <td id="d9">9</td>
+                <td id="y9"></td>
+                <td id="skz9"><label for="name9"></label></td>
+                <td id="txt9"><input type="text" id="st9" name="ST"></td>
+                <td id="c9">～</td>
+                <td id="e9"><input type="text" id="end9" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res9"></td>
+            </tr>
+
+            <tr id="tr10">
+                <td id="d10">10</td>
+                <td id="y10"></td>
+                <td id="skz10"><label for="name10"></label></td>
+                <td id="txt10"><input type="text" id="st10" name="ST"></td>
+                <td id="c10">～</td>
+                <td id="e10"><input type="text" id="end10" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res10"></td>
+            </tr>
+
+            <tr id="tr11">
+                <td id="d11">11</td>
+                <td id="y11"></td>
+                <td id="skz11"><label for="name11"></label></td>
+                <td id="txt11"><input type="text" id="st11" name="ST"></td>
+                <td id="c11">～</td>
+                <td id="e11"><input type="text" id="end11" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res11"></td>
+            </tr>
+
+            <tr id="tr12">
+                <td id="d12">12</td>
+                <td id="y12"></td>
+                <td id="skz12"><label for="name13"></label></td>
+                <td id="txt12"><input type="text" id="st12" name="ST"></td>
+                <td id="c12">～</td>
+                <td id="e12"><input type="text" id="end12" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res12"></td>
+            </tr>
+
+            <tr id="tr13">
+                <td id="d13">13</td>
+                <td id="y13"></td>
+                <td id="skz13"><label for="name14"></label></td>
+                <td id="txt13"><input type="text" id="st13" name="ST"></td>
+                <td id="c13">～</td>
+                <td id="e13"><input type="text" id="end13" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res13"></td>
+            </tr>
+
+            <tr id="tr14">
+                <td id="d14">14</td>
+                <td id="y14"></td>
+                <td id="skz14"><label for="name14"></label></td>
+                <td id="txt14"><input type="text" id="st14" name="ST"></td>
+                <td id="c14">～</td>
+                <td id="e14"><input type="text" id="end14" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res14"></td>
+            </tr>
+
+            <tr id="tr15">
+                <td id="d15">15</td>
+                <td id="y15"></td>
+                <td id="skz15"><label for="name15"></label></td>
+                <td id="txt15"><input type="text" id="st15" name="ST"></td>
+                <td id="c15">～</td>
+                <td id="e15"><input type="text" id="end15" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res15"></td>
+            </tr>
+
+            <tr id="tr16">
+                <td id="d16">16</td>
+                <td id="y16"></td>
+                <td id="skz16"><label for="name16"></label></td>
+                <td id="txt16"><input type="text" id="st16" name="ST"></td>
+                <td id="c16">～</td>
+                <td id="e16"><input type="text" id="end16" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res16"></td>
+            </tr>
+
+            <tr id="tr17">
+                <td id="d17">17</td>
+                <td id="y17"></td>
+                <td id="skz17"><label for="name17"></label></td>
+                <td id="txt17"><input type="text" id="st17" name="ST"></td>
+                <td id="c17">～</td>
+                <td id="e17"><input type="text" id="end17" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res17"></td>
+            </tr>
+
+            <tr id="tr18">
+                <td id="d18">18</td>
+                <td id="y18"></td>
+                <td id="skz18"><label for="name18"></label></td>
+                <td id="txt18"><input type="text" id="st18" name="ST"></td>
+                <td id="c18">～</td>
+                <td id="e18"><input type="text" id="end18" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res18"></td>
+            </tr>
+
+            <tr id="tr19">
+                <td id="d19">19</td>
+                <td id="y19"></td>
+                <td id="skz19"><label for="name19"></label></td>
+                <td id="txt19"><input type="text" id="st19" name="ST"></td>
+                <td id="c19">～</td>
+                <td id="e19"><input type="text" id="end19" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res19"></td>
+            </tr>
+
+            <tr id="tr20">
+                <td id="d20">20</td>
+                <td id="y20"></td>
+                <td id="skz20"><label for="name20"></label></td>
+                <td id="txt20"><input type="text" id="st20" name="ST"></td>
+                <td id="c20">～</td>
+                <td id="e20"><input type="text" id="end20" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res20"></td>
+            </tr>
+
+            <tr id="tr21">
+                <td id="d21">21</td>
+                <td id="y21"></td>
+                <td id="skz21"><label for="name21"></label></td>
+                <td id="txt21"><input type="text" id="st21" name="ST"></td>
+                <td id="c21">～</td>
+                <td id="e21"><input type="text" id="end21" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res21"></td>
+            </tr>
+
+            <tr id="tr22">
+                <td id="d22">22</td>
+                <td id="y22"></td>
+                <td id="skz22"><label for="name22"></label></td>
+                <td id="txt22"><input type="text" id="st22" name="ST"></td>
+                <td id="c22">～</td>
+                <td id="e22"><input type="text" id="end22" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res22"></td>
+            </tr>
+
+            <tr id="tr23">
+                <td id="d23">23</td>
+                <td id="y23"></td>
+                <td id="skz23"><label for="name23"></label></td>
+                <td id="txt23"><input type="text" id="st23" name="ST"></td>
+                <td id="c23">～</td>
+                <td id="e23"><input type="text" id="end23" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res23"></td>
+            </tr>
+
+            <tr id="tr24">
+                <td id="d24">24</td>
+                <td id="y24"></td>
+                <td id="skz24"><label for="name24"></label></td>
+                <td id="txt24"><input type="text" id="st24" name="ST"></td>
+                <td id="c24">～</td>
+                <td id="e24"><input type="text" id="end24" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res24"></td>
+            </tr>
+
+            <tr id="tr25">
+                <td id="d25">25</td>
+                <td id="y25"></td>
+                <td id="skz25"><label for="name25"></label></td>
+                <td id="txt25"><input type="text" id="st25" name="ST"></td>
+                <td id="c25">～</td>
+                <td id="e25"><input type="text" id="end25" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res25"></td>
+            </tr>
+
+            <tr id="tr26">
+                <td id="d26">26</td>
+                <td id="y26"></td>
+                <td id="skz26"><label for="name26"></label></td>
+                <td id="txt26"><input type="text" id="st26" name="ST"></td>
+                <td id="c26">～</td>
+                <td id="e26"><input type="text" id="end26" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res26"></td>
+            </tr>
+
+            <tr id="tr27">
+                <td id="d27">27</td>
+                <td id="y27"></td>
+                <td id="skz27"><label for="name27"></label></td>
+                <td id="txt27"><input type="text" id="st27" name="ST"></td>
+                <td id="c27">～</td>
+                <td id="e27"><input type="text" id="end27" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res27"></td>
+            </tr>
+
+            <tr id="tr28">
+                <td id="d28">28</td>
+                <td id="y28"></td>
+                <td id="skz28"><label for="name22"></label></td>
+                <td id="txt28"><input type="text" id="st28" name="ST"></td>
+                <td id="c28">～</td>
+                <td id="e28"><input type="text" id="end28" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res28"></td>
+            </tr>
+
+            <tr id="tr29">
+                <td id="d29">29</td>
+                <td id="y29"></td>
+                <td id="skz29"><label for="name29"></label></td>
+                <td id="txt29"><input type="text" id="st29" name="ST"></td>
+                <td id="c29">～</td>
+                <td id="e29"><input type="text" id="end29" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res29"></td>
+            </tr>
+
+            <tr id="tr30">
+                <td id="d30">30</td>
+                <td id="y30"></td>
+                <td id="skz30"><label for="name30"></label></td>
+                <td id="txt30"><input type="text" id="st30" name="ST"></td>
+                <td id="c30">～</td>
+                <td id="e30"><input type="text" id="end30" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res30"></td>
+            </tr>
+            <!--//最終行-->
+            <tr id="tr31">
+                <td id="d31">31</td>
+                <td id="y31"></td>
+                <td id="skz31"><label for="name31"></label></td>
+                <td id="txt31"><input type="text" id="st31" name="ST"></td>
+                <td id="c31">～</td>
+                <td id="e31"><input type="text" id="end31" name="ET" onblur="timeTOTAL();sumTIME()"></td>
+                <td id="res31"></td>
+            </tr>
+        </table>
+    </div>
+
+
+
+    <!--西暦と月から曜日を求めて、土日に色付けする関数-->
+    <script>
+        function getD() {
+           
+            var year = document.getElementById('year1').value;
+            var month = document.getElementById('month1').value;
+            //日数の取得
+            var days = new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate();
+            var WeekChars = ['日', '月', '火', '水', '木', '金', '土'];
+            for (var ii = 1; ii <= days; ii++) {
+                var dObj = new Date(year, month - 1, ii);
+                var wDay = dObj.getDay();
+                worktbl.rows[ii].cells[1].innerText = WeekChars[wDay];
+                //土日に色付け
+                $('td:contains("土")').parent("tr").css("background-color", "#BAD3FF");
+                $('td:contains("日")').parent("tr").css("background-color", "#FFD5EC");
+                //$('td:contains(holiday)').parent("tr").css("background-color", "#FFD5EC");
+            }
+        }
+    </script>
+
+    <!--勤務時間を計算して表示する関数-->
+    <script>
+        function timeTOTAL() {
+            var ss = 0;
+            for (var j = 1; j <= 31; j++) {
+                var startTIME = document.getElementById('st' + j).value;
+                var endTIME = document.getElementById('end' + j).value;
+                var resultTIME = parseInt(endTIME) - parseInt(startTIME);
+
+                if (resultTIME >= 0) {
+                    //1日の勤務時間を表示
+                    document.getElementById('res' + j).innerText = resultTIME;
+                    //総勤務時間を表示
+                    ss = ss + resultTIME;
+                    document.getElementById('total2').innerText = ss;
+                }
+            }
+        }
+    </script>
+
+ <!--初期化処理-->
+ <script>
+    function clearTextBoxes() {
+        for (var j = 1; j <= 31; j++) {
+            document.getElementById('st' + j).value ="";
+            document.getElementById('end' + j).value = "";
+                       
+          //1日の勤務時間
+         document.getElementById('res' + j).innerText = "";
+         //総勤務時間
+         document.getElementById('total2').innerText = "";
+         document.getElementById('skz' + j).innerText = "";
+         document.getElementById('tr' + j).style.backgroundColor = "";  
+        }
+    }
+</script>
+
+    <!--月の日数に応じて行数を調整する関数-->
+    <script>
+        function eliminate_tblROW() {
+            var year = document.getElementById('year1').value;
+            var month = document.getElementById('month1').value;
+            //日数の取得
+            var days = new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate();
+
+            if (days == 30) {
+                document.getElementById('tr31').style.visibility = "hidden";
+            } else if (days == 28) {
+                document.getElementById('tr31').style.visibility = "hidden";
+                document.getElementById('tr30').style.visibility = "hidden";
+                document.getElementById('tr29').style.visibility = "hidden";
+            } else if (days == 29) {
+                document.getElementById('tr31').style.visibility = "hidden";
+                document.getElementById('tr30').style.visibility = "hidden";
+            } else {
+                document.getElementById('tr31').style.visibility = "visible";
+                document.getElementById('tr30').style.visibility = "visible";
+                document.getElementById('tr29').style.visibility = "visible";
+            }
+        }
+    </script>
+
+    <!--祝日を表示するプラグイン-->
+    <script src="https://cdn.rawgit.com/osamutake/japanese-holidays-js/v1.0.9/lib/japanese-holidays.min.js"></script>
+    <script>
+        function getHoliday() {
+                       for (var ii = 1; ii <= 31; ii++) {
+                var year = document.getElementById('year1').value;
+                var month = document.getElementById('month1').value;
+                var today = new Date(year, month - 1, ii);
+                var holiday = JapaneseHolidays.isHoliday(today);
+
+                if (holiday) {
+                    document.getElementById('skz' + ii).innerText = holiday;
+                    document.getElementById('tr' + ii).style.backgroundColor = '#FFD5EC';
+                    //$('td:contains(holiday)').parent("tr").css("background-color", "#FFD5EC");
+                }    
+            
+                }
+            }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.9.10/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
+    <script src="export-xlsx.js"></script>
+
+</body>
+
+
+</html>
